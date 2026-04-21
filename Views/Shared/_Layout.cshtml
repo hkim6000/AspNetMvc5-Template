@@ -1,0 +1,228 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>@ViewBag.Title </title>
+
+    <link rel="stylesheet" href="https://googleapis.com">
+    <link rel="stylesheet" href="~/Styles/global.css" type="text/css" />
+
+    <script>
+        window.onload = function (e) {
+            InitBodyShape();
+        }
+        window.onresize = function (e) {
+            InitBodyShape();
+        }
+
+        function showLoading() {
+            $('#loading-overlay').addClass('active');
+        }
+
+        function hideLoading() {
+            $('#loading-overlay').removeClass('active');
+        }
+
+        function InitBodyShape() {
+            var html = document.getElementsByTagName('html')[0];
+            var body = document.getElementsByTagName('body')[0];
+            html.setAttribute('style', 'margin:0px;height:100%;width:100%;');
+            body.setAttribute('style', 'margin:0px;height:100%;width:100%;');
+            var tw = document.querySelector('.titlewrap');
+            var cw = document.querySelector('.contentwrap');
+            cw.style.height = (body.offsetHeight - tw.offsetHeight).toString() + 'px';
+            var m = document.querySelector('.menubox');
+            var c = document.querySelector('.contentbox');
+            c.style.width = (body.offsetWidth - m.offsetWidth).toString() + 'px';
+        }
+
+        function LogOut() {
+           window.location.href = '@Url.Action("Logout", "Home")';
+        }
+        function OpenPage(PageName, Action, Area) {
+            @* // this doesn't work
+            var url = '@Url.Action("REPLACEME_ACTION", "REPLACEME_CONTROLLER", new { area = "REPLACEME_AREA" })';
+            url = decodeURIComponent(url);
+            url = url.replace("REPLACEME_ACTION", Action)
+                     .replace("REPLACEME_CONTROLLER", Controller)
+                     .replace("REPLACEME_AREA", Area);
+            // this works
+            url = '@Url.Action("Index", "Users", new { area = "Users" })';*@
+
+            var url = "/" + Area + "/" + Area + "/" + Action;
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                beforeSend: function () {
+                    showLoading();
+                },
+                success: function (result) {
+                    RenderTab(PageName, Area, result);
+                },
+                error: function () {
+                    alert("Error loading page.");
+                },
+                complete: function () {
+                    hideLoading();
+                }
+            });
+        }
+
+        function RenderTab(PageName, Area, result) {
+            var tbool = false;
+            var pagetab = document.getElementById('pagetab');
+            var pagehtm = document.getElementById('pagehtm');
+
+            var elms = document.querySelectorAll('[data-role="pagetab"]');
+            for (var i = 0; i < elms.length; i++) {
+                if (elms[i].id == "tab_" + Area) {
+                    tbool = true;
+                    elms[i].setAttribute('class', 'contenttabsel');
+                } else {
+                    elms[i].setAttribute('class', 'contenttab');
+                }
+            }
+
+            var htms = document.querySelectorAll('[data-role="pagehtm"]');
+            for (var i = 0; i < htms.length; i++) {
+                if (htms[i].id != "htm_" + Area) {
+                    htms[i].style.display = 'none';
+                }
+            }
+
+            if (tbool == false) {
+                var p1 = document.createElement("div");
+                p1.setAttribute('style', 'display: inline-block;');
+                p1.setAttribute('onclick', "focusTab('" + Area + "')");
+                p1.innerHTML = PageName;
+
+                var p2 = document.createElement("div");
+                p2.setAttribute('style', 'display: inline-block; margin-left:6px; font-size:14px; font-weight:bold; color:#ff6600;');
+                p2.setAttribute('onclick', "removeTab('" + Area + "')");
+                p2.innerHTML = '&#10008;';
+
+                var p = document.createElement("div");
+                p.setAttribute('id', 'tab_' + Area);
+                p.setAttribute('class', 'contenttabsel');
+                p.setAttribute('data-role', 'pagetab');
+                p.appendChild(p1);
+                p.appendChild(p2);
+                pagetab.appendChild(p);
+
+                var h = document.createElement("div");
+                h.setAttribute('id', 'htm_' + Area);
+                h.setAttribute('data-role', 'pagehtm');
+                h.style.display = '';
+                pagehtml.appendChild(h);
+
+                $('#htm_' + Area).html(result);
+            } else {
+                $('#htm_' + Area).html(result);
+                focusTab(Area);
+            }
+        }
+        function focusTab(Area) {
+            var pagetab = document.getElementById('pagetab');
+            var pagehtm = document.getElementById('pagehtm');
+
+            var elms = document.querySelectorAll('[data-role="pagetab"]');
+            for (var i = 0; i < elms.length; i++) {
+                if (elms[i].id == "tab_" + Area) {
+                    elms[i].setAttribute('class', 'contenttabsel');
+                } else {
+                    elms[i].setAttribute('class', 'contenttab');
+                }
+            }
+
+            var htms = document.querySelectorAll('[data-role="pagehtm"]');
+            for (var i = 0; i < htms.length; i++) {
+                if (htms[i].id == "htm_" + Area) {
+                    htms[i].style.display = '';
+                } else {
+                    htms[i].style.display = 'none';
+                }
+            }
+
+        }
+
+        function removeTab(Area) {
+            var pagetab = document.getElementById('pagetab');
+            var pagehtm = document.getElementById('pagehtm');
+
+            var tab = document.getElementById("tab_" + Area);
+            var htm = document.getElementById("htm_" + Area);
+
+            var tbool = false;
+
+            if (tab != null) {
+                tab.parentNode.removeChild(tab);
+            }
+            if (htm != null) {
+                if (htm.style.display == '') {
+                    tbool = true;
+                }
+                htm.parentNode.removeChild(htm);
+            }
+
+            if (tbool == true) {
+                var elms = document.querySelectorAll('[data-role="pagetab"]');
+                for (var i = 0; i < elms.length; i++) {
+                    if (i == elms.length - 1) {
+                        elms[i].setAttribute('class', 'contenttabsel');
+                    } else {
+                        elms[i].setAttribute('class', 'contenttab');
+                    }
+                }
+
+                var htms = document.querySelectorAll('[data-role="pagehtm"]');
+                for (var i = 0; i < htms.length; i++) {
+                    if (i == htms.length - 1) {
+                        htms[i].style.display = '';
+                    } else {
+                        htms[i].style.display = 'none';
+                    }
+                }
+            }
+
+        }
+    </script>
+</head>
+<body>
+    <div class="wrap">
+        <div id="titlewrap" class="titlewrap">
+            <div class="titleimagewrap">
+                <img class="titleimage" src="~/images/logo.jpg">
+            </div>
+            <div class="titlelabel">@ViewBag.Title</div>
+            <div class="titleiconwrap">
+                <img class="titleicon" src="~/images/img_fakeuser.jpg" onclick="location.href='@Url.Action("Logout", "Home")'"/>
+                <div class="titleiconmenu">
+                </div>
+            </div>
+        </div>
+        <div class="contentwrap">
+            <div class="menubox">
+                @RenderBody()
+            </div>
+
+            <div id="contentbox" class="contentbox">
+                <div id="pagetab" style="width:100%; overflow:hidden; padding-top:4px;">
+                </div>
+                <div id="pagehtml" style="margin-top:6px; ">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+</body>
+</html>
