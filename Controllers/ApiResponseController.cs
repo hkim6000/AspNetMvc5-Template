@@ -22,7 +22,8 @@ namespace AspNetMvc5.Controllers
     {
         private static readonly ConcurrentDictionary<string, Type> _typeCache = new ConcurrentDictionary<string, Type>();
 
-        public async Task<string> GetMethodResult(string reqmsg)
+        // can be replaced with IServiceModule
+        private async Task<string> GetMethodResult(string reqmsg)
         {
             string result = string.Empty;
 

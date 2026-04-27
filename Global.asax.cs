@@ -29,6 +29,13 @@ namespace AspNetMvc5
 
         protected void Application_AuthenticateRequest(object sender, EventArgs e)
         {
+            //gateway level permission will be here
+            //if (request.Url.AbsolutePath.ToLower().Contains("/admin/") && !user.Role.Contains("Admin"))
+            //{
+            //    Response.StatusCode = 403;
+            //    Response.End();
+            //}
+
             var cookie = Request.Cookies[FormsAuthentication.FormsCookieName];
             if (cookie == null) return;
 
